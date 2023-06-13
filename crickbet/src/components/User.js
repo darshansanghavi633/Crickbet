@@ -1,40 +1,42 @@
 import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
+import { FaHandPointRight } from "react-icons/fa";
+import { RiAlertFill } from "react-icons/ri";
+import { FaHandPointUp } from "react-icons/fa";
 
 export default function User(props) {
   let isChoiceMade = false;
   const auth = localStorage.getItem("user");
   const name = JSON.parse(auth).name;
   const [matches, setMatches] = useState("");
-  const[choice,setChoice]=useState('');
+  const [choice, setChoice] = useState("");
   useEffect(() => {
     getMatches();
   }, []);
   const userChoices = [
     {
-      name:name,
-      choice:choice
-    }
+      name: name,
+      choice: choice,
+    },
   ];
   const match = matches.match;
 
-  const handleChoice =async () => {
-    if(!isChoiceMade){
+  const handleChoice = async () => {
+    if (!isChoiceMade) {
       isChoiceMade = true;
-      let result = await fetch("http://localhost:5000/user",{
-          method: "post",
-          body: JSON.stringify({match,userChoices}),
-          headers: {
-              "Content-Type": "application/json",
-          },
+      let result = await fetch("http://localhost:5000/user", {
+        method: "post",
+        body: JSON.stringify({ match, userChoices }),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-   
+
       result = await result.json();
-      console.log(result)
+      console.log(result);
     }
   };
-
 
   const getMatches = async () => {
     let result = await fetch("http://localhost:5000/user", {
@@ -49,7 +51,7 @@ export default function User(props) {
     <div>
       <div className="container text-center" style={{ marginTop: "100px" }}>
         <h3>
-          {`${props.name} are you ready to cheer on your favorite team today? Who are you
+          {`${props.name.name} are you ready to cheer on your favorite team today? Who are you
           rooting for?`}
         </h3>
         <div
@@ -64,7 +66,7 @@ export default function User(props) {
             id="btnradio1"
             autoComplete="off"
             value={choice}
-            onChange={()=>setChoice(matches.team1)}
+            onChange={() => setChoice(matches.team1)}
           />
           <label className="btn btn-outline-success" htmlFor="btnradio1">
             {matches.team1}
@@ -77,7 +79,7 @@ export default function User(props) {
             id="btnradio2"
             autoComplete="off"
             value={choice}
-            onChange={(e)=>setChoice(matches.team2)}
+            onChange={(e) => setChoice(matches.team2)}
           />
           <label className="btn btn-outline-success" htmlFor="btnradio2">
             {matches.team2}
@@ -93,20 +95,26 @@ export default function User(props) {
         </button>
       </div>
       <div className="container text-center">
-        {
-        choice?(
+        {choice ? (
           <h3>You are on {choice} side</h3>
-        ):(
-          <h3>Please select team</h3>
-        )
-        }
+        ) : (
+          <h3>
+            Please select team <FaHandPointUp />
+          </h3>
+        )}
       </div>
       <div className="container" style={{ fontSize: "20px" }}>
         <ul>
-          <i>How to select team :</i>
+          <i>
+            {" "}
+            <FaHandPointRight /> How to select team :
+          </i>
           <li>Select the team you are supporting today from above.</li>
           <li>After selecting team of your choice click on confirm.</li>
-          <li style={{color:"red"}}>Don't forget to click on CONFIRM</li>
+          <li style={{ color: "red" }}>
+            {" "}
+            <RiAlertFill /> Don't forget to click on CONFIRM
+          </li>
           <li>
             Once you have clicked confirm you can not change your choice on your
             own.

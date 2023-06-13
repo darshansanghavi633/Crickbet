@@ -1,13 +1,15 @@
 import React from "react";
-
+import { MdLiveHelp } from "react-icons/md";
+import { FcSportsMode } from "react-icons/fc";
 export default function Home() {
+  // console.log("Home");
   return (
     <div className="container home">
       <h1
         className="text-center"
         style={{ color: "lightgreen", marginTop: "85px" }}
       >
-        Crickbet
+        <FcSportsMode /> Crickbet
       </h1>
       <p style={{ fontSize: "20px" }}>
         Crickbet is a friendly IPL betting game that users can play without any
@@ -23,7 +25,10 @@ export default function Home() {
         excitement to your IPL watching experience, give Crickbet a try!
       </p>
       <div className="container">
-        <h2 style={{ color: "lightgreen" }}>How To Play ?</h2>
+        <h2 style={{ color: "lightgreen" }}>
+          {" "}
+          How To Play <MdLiveHelp style={{ fontSize: 40 }} />
+        </h2>
         <p style={{ fontSize: "20px" }}>
           <span>
             Just half an hour before every match admin will post a poll for
@@ -56,7 +61,7 @@ export default function Home() {
           <div className="col my-3">
             <div className="card" style={{ width: "18rem" }}>
               <img
-                src="https://india.postsen.com/content/uploads/2023/03/19/1f9d5b02f0.jpg"
+                src="https://assets.telegraphindia.com/telegraph/2020/Aug/1597260667_ee9hrtbumaaqwlg.jpg"
                 className="card-img-top"
                 alt="MS Dhoni"
               />
