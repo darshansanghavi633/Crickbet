@@ -27,7 +27,7 @@ export default function Admin() {
       alert("Please fill in all fields");
       return;
     }
-    let result = await fetch("http://127.0.0.1:5000/admin", {
+    let result = await fetch("http://127.0.0.1:5002/admin", {
       method: "post",
       body: JSON.stringify({ match, team1, team2 }),
       headers: {

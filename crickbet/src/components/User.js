@@ -6,6 +6,7 @@ import { RiAlertFill } from "react-icons/ri";
 import { FaHandPointUp } from "react-icons/fa";
 
 export default function User(props) {
+  console.log(props)
   let isChoiceMade = false;
   const auth = localStorage.getItem("user");
   const name = JSON.parse(auth).name;
@@ -25,7 +26,7 @@ export default function User(props) {
   const handleChoice = async () => {
     if (!isChoiceMade) {
       isChoiceMade = true;
-      let result = await fetch("http://localhost:5000/user", {
+      let result = await fetch("http://localhost:5002/user", {
         method: "post",
         body: JSON.stringify({ match, userChoices }),
         headers: {
@@ -39,14 +40,34 @@ export default function User(props) {
   };
 
   const getMatches = async () => {
-    let result = await fetch("http://localhost:5000/user", {
-      //   headers:{
-      //     authorization: `bearer ${JSON.parse(localStorage.getItem('token'))}`
-      //   }
-    });
-    result = await result.json();
-    setMatches(result);
+    try {
+      const token = JSON.parse(localStorage.getItem('token'));
+      if (!token) {
+        // Handle case where token is not found
+        console.error("Token not found in localStorage");
+        return;
+      }
+
+      let result = await fetch("http://localhost:5002/user", {
+        headers: {
+          authorization: `Bearer ${token}` // Assuming token is prefixed with 'Bearer'
+        }
+      });
+
+      if (!result.ok) {
+        // Handle non-successful response (e.g., server error)
+        console.error(`Error: ${result.status} - ${result.statusText}`);
+        return;
+      }
+
+      result = await result.json();
+      setMatches(result);
+    } catch (error) {
+      // Handle any unexpected errors
+      console.error("Error fetching matches:", error);
+    }
   };
+
   return (
     <div>
       <div className="container text-center" style={{ marginTop: "100px" }}>

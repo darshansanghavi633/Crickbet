@@ -1,9 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import {FcSportsMode} from 'react-icons/fc'
-import {MdLeaderboard} from 'react-icons/md'
-import {AiFillHome} from 'react-icons/ai'
+import { FcSportsMode } from 'react-icons/fc'
+import { MdLeaderboard } from 'react-icons/md'
+import { AiFillHome } from 'react-icons/ai'
 
 
 export default function Navbar() {
@@ -19,7 +19,7 @@ export default function Navbar() {
       <nav className="navbar navbar-expand-lg navbar-dark bg-black fixed-top">
         <div className="container-fluid">
           <Link className="navbar-brand" to="/">
-            <FcSportsMode/> Crickbet
+            <FcSportsMode /> Crickbet
           </Link>
           <button
             className="navbar-toggler"
@@ -36,10 +36,10 @@ export default function Navbar() {
             {auth ? (
               <div className="navbar-nav">
                 <Link className="nav-link active" aria-current="page" to="/">
-                 <AiFillHome style={{marginBottom:"5px"}}/> Home
+                  <AiFillHome style={{ marginBottom: "5px" }} /> Home
                 </Link>
                 <Link className="nav-link active" to="/stats">
-                  <MdLeaderboard style={{marginBottom:"5px"}}/> Leaderboard
+                  <MdLeaderboard style={{ marginBottom: "5px" }} /> Leaderboard
                 </Link>
                 <Link className="nav-link active" to="/user">
                   {JSON.parse(auth).name}

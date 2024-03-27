@@ -4,36 +4,85 @@ import { useNavigate } from "react-router-dom";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     const auth = localStorage.getItem("user");
-    if (auth) {
+    const token = localStorage.getItem("token");
+    if (auth && token) {
       navigate("/");
     }
-  });
+  }, []);
 
-  const handleLogin = async() => {
-    let result = await fetch("http://127.0.0.1:5000/login",{
-      method:"post",
-      body:JSON.stringify({email,password}),
-      headers:{
-        'Content-Type':'application/json'
-      },
-    })
-    result = await result.json();
-    localStorage.setItem("user",JSON.stringify(result.user));
-    localStorage.setItem("token",JSON.stringify(result.auth));
-    if (result.user) {
-      navigate("/");
-    }else{
-      alert("enter valid login credentials");
+  const handleLogin = async () => {
+    try {
+      // Check if any field is empty
+      if (email.trim() === "" || password.trim() === "") {
+        setErrorMessage("Please fill in all fields");
+        setTimeout(() => {
+          setErrorMessage("");
+        }, 3000);
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setErrorMessage("Please enter a valid email address");
+        setTimeout(() => {
+          setErrorMessage("");
+        }, 3000);
+        return;
+      }
+
+      // Check password length
+      if (password.length < 8) {
+        setErrorMessage("Password must be at least 8 characters long");
+        setTimeout(() => {
+          setErrorMessage("");
+        }, 3000);
+        return;
+      }
+
+      const response = await fetch("http://127.0.0.1:5002/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to login");
+      }
+
+      const result = await response.json();
+      if (result.user && result.token) {
+        localStorage.setItem("user", JSON.stringify(result.user));
+        localStorage.setItem("token", JSON.stringify(result.token));
+        navigate("/");
+      } else {
+        throw new Error("Invalid response data");
+      }
+    } catch (error) {
+      console.error("Error during user login:", error);
+      setErrorMessage("Your email or password is incorrect. Please try again.");
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 3000);
     }
   };
 
   return (
     <div className="container">
-      <h2 className="text-center" style={{marginTop:"80px"}}>Log In</h2>
+      <h2 className="text-center" style={{ marginTop: "80px" }}>Log In</h2>
+      {errorMessage && (
+        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          {errorMessage}
+          <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      )}
       <form>
         <div className="mb-3">
           <label htmlFor="exampleInputEmail1" className="form-label">
@@ -47,7 +96,7 @@ export default function Login() {
             id="exampleInputEmail1"
             aria-describedby="emailHelp"
           />
-          <div id="emailHelp" className="form-text">
+          <div id="emailHelp" className="form-text" style={{ color: "#a701f1" }}>
             We'll never share your email with anyone else.
           </div>
         </div>
