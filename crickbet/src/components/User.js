@@ -1,34 +1,63 @@
-import React from "react";
-import { useState } from "react";
-import { useEffect } from "react";
-import { FaHandPointRight } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { FaHandPointRight, FaHandPointUp } from "react-icons/fa";
 import { RiAlertFill } from "react-icons/ri";
-import { FaHandPointUp } from "react-icons/fa";
 
-export default function User(props) {
-  console.log(props)
-  let isChoiceMade = false;
-  const auth = localStorage.getItem("user");
-  const name = JSON.parse(auth).name;
+function User(props) {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [isChoiceMade, setIsChoiceMade] = useState(false);
   const [matches, setMatches] = useState("");
   const [choice, setChoice] = useState("");
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    const timerID = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearInterval(timerID);
+    };
+  }, []);
+
   useEffect(() => {
     getMatches();
   }, []);
-  const userChoices = [
-    {
-      name: name,
-      choice: choice,
-    },
-  ];
-  const match = matches.match;
+
+  useEffect(() => {
+    const hours = currentTime.getHours();
+    const minutes = currentTime.getMinutes();
+
+    // Check if the current time is between 7:00 PM and 7:30 PM IST (11:30 AM to 12:00 PM UTC)
+    if (hours === 1 && minutes >= 0 && minutes <= 29) {
+      setIsChoiceMade(true); // Allow choice selection from 7:00 PM to 7:30 PM IST
+      const secondsUntilEnd = (30 - minutes) * 60;
+      setTimeLeft(secondsUntilEnd);
+    } else {
+      setIsChoiceMade(false); // Disable choice selection outside the specified time range
+      setTimeLeft(0);
+    }
+  }, [currentTime]);
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timerID = setTimeout(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+
+      return () => {
+        clearTimeout(timerID);
+      };
+    }
+  }, [timeLeft]);
 
   const handleChoice = async () => {
+    setIsConfirmed(true);
     if (!isChoiceMade) {
-      isChoiceMade = true;
+      setIsChoiceMade(true);
       let result = await fetch("http://localhost:5002/user", {
         method: "post",
-        body: JSON.stringify({ match, userChoices }),
+        body: JSON.stringify({ match: matches.match, userChoices: [{ name: name, choice: choice }] }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -41,21 +70,19 @@ export default function User(props) {
 
   const getMatches = async () => {
     try {
-      const token = JSON.parse(localStorage.getItem('token'));
+      const token = JSON.parse(localStorage.getItem("token"));
       if (!token) {
-        // Handle case where token is not found
         console.error("Token not found in localStorage");
         return;
       }
 
       let result = await fetch("http://localhost:5002/user", {
         headers: {
-          authorization: `Bearer ${token}` // Assuming token is prefixed with 'Bearer'
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!result.ok) {
-        // Handle non-successful response (e.g., server error)
         console.error(`Error: ${result.status} - ${result.statusText}`);
         return;
       }
@@ -63,23 +90,20 @@ export default function User(props) {
       result = await result.json();
       setMatches(result);
     } catch (error) {
-      // Handle any unexpected errors
       console.error("Error fetching matches:", error);
     }
   };
+
+  const auth = localStorage.getItem("user");
+  const name = JSON.parse(auth).name;
 
   return (
     <div>
       <div className="container text-center" style={{ marginTop: "100px" }}>
         <h3>
-          {`${props.name.name} are you ready to cheer on your favorite team today? Who are you
-          rooting for?`}
+          {`${props.name.name} are you ready to cheer on your favorite team today? Who are you rooting for?`}
         </h3>
-        <div
-          className="btn-group my-3"
-          role="group"
-          aria-label="Basic radio toggle button group"
-        >
+        <div className="btn-group my-3" role="group" aria-label="Basic radio toggle button group">
           <input
             type="radio"
             className="btn-check"
@@ -88,6 +112,7 @@ export default function User(props) {
             autoComplete="off"
             value={choice}
             onChange={() => setChoice(matches.team1)}
+            disabled={isConfirmed || !isChoiceMade}
           />
           <label className="btn btn-outline-success" htmlFor="btnradio1">
             {matches.team1}
@@ -101,6 +126,7 @@ export default function User(props) {
             autoComplete="off"
             value={choice}
             onChange={(e) => setChoice(matches.team2)}
+            disabled={isConfirmed || !isChoiceMade}
           />
           <label className="btn btn-outline-success" htmlFor="btnradio2">
             {matches.team2}
@@ -111,6 +137,7 @@ export default function User(props) {
           style={{ color: "lightgreen" }}
           className="btn btn-dark mx-4"
           onClick={handleChoice}
+          disabled={isConfirmed || !isChoiceMade}
         >
           CONFIRM
         </button>
@@ -123,6 +150,11 @@ export default function User(props) {
             Please select team <FaHandPointUp />
           </h3>
         )}
+       {timeLeft > 0 && (
+  <div>
+    <h4>{`Time left to select: ${Math.floor(timeLeft/60 )} minutes`}</h4>
+  </div>
+)}
       </div>
       <div className="container" style={{ fontSize: "20px" }}>
         <ul>
@@ -137,8 +169,7 @@ export default function User(props) {
             <RiAlertFill /> Don't forget to click on CONFIRM
           </li>
           <li>
-            Once you have clicked confirm you can not change your choice on your
-            own.
+            Once you have clicked confirm you can not change your choice on your own.
           </li>
           <li>If still you want to change the choice try contacting admin.</li>
         </ul>
@@ -146,3 +177,5 @@ export default function User(props) {
     </div>
   );
 }
+
+export default User;
