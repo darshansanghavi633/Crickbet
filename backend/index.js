@@ -1,5 +1,6 @@
 const express = require("express");
 const User = require("./db/User");
+const bcrypt = require('bcrypt');
 const cors = require("cors");
 const Admin = require("./db/Admin");
 const Match = require("./db/Match");
@@ -17,10 +18,26 @@ app.use((err, req, res, next) => {
   res.status(500).send("Internal Server Error");
 });
 
+
 app.post("/signup", async (req, res) => {
   try {
-    const user = new User(req.body);
-    // console.log(user)
+    const { name, email, password } = req.body;
+
+    // Check if required fields are provided
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Name, email, and password are required" });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ name });
+    if (existingUser) {
+      return res.status(400).json({ message: "User with this name already exists" });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+
+    const user = new User({ name, email, password: hashedPassword });
     const result = await user.save();
     const sanitizedResult = result.toObject();
     delete sanitizedResult.password;
@@ -38,14 +55,19 @@ app.post("/signup", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   try {
-    const user = await User.findOne(req.body).select("-password");
-    if (user) {
-      // Generate JWT token and send it along with user data
-      const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '1h' }); // You need to implement this function
-      res.send({ user, token });
-    } else {
-      res.status(401).send("Invalid email or password");
+    const { email, password } = req.body;
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    // If user does not exist or password does not match
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).send("Invalid email or password");
     }
+
+    // If email and password are correct, generate JWT token and send user data without password
+    const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '1h' });
+    res.send({ user: user.toObject({ getters: true }), token });
   } catch (error) {
     console.error("Error logging in:", error);
     res.status(500).send("Server Error logging in");
