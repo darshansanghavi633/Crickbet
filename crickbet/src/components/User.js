@@ -29,7 +29,7 @@ function User(props) {
     const minutes = currentTime.getMinutes();
 
     // Check if the current time is between 7:00 PM and 7:30 PM IST (11:30 AM to 12:00 PM UTC)
-    if (hours === 1 && minutes >= 0 && minutes <= 29) {
+    if (hours === 17 && minutes >= 0 && minutes <= 29) {
       setIsChoiceMade(true); // Allow choice selection from 7:00 PM to 7:30 PM IST
       const secondsUntilEnd = (30 - minutes) * 60;
       setTimeLeft(secondsUntilEnd);
@@ -82,12 +82,14 @@ function User(props) {
         },
       });
 
+
       if (!result.ok) {
         console.error(`Error: ${result.status} - ${result.statusText}`);
         return;
       }
 
       result = await result.json();
+      console.log(result);
       setMatches(result);
     } catch (error) {
       console.error("Error fetching matches:", error);
@@ -150,11 +152,13 @@ function User(props) {
             Please select team <FaHandPointUp />
           </h3>
         )}
-       {timeLeft > 0 && (
-  <div>
-    <h4>{`Time left to select: ${Math.floor(timeLeft/60 )} minutes`}</h4>
-  </div>
-)}
+        {timeLeft > 0 ? (
+          <div>
+            <h4>{`Time left to select: ${Math.floor(timeLeft / 60)} minutes`}</h4>
+          </div>
+        ) : (<div>
+          <h4>{`Alright, it's time to settle the score! Choose your squad by picking a slot between 7:00pm and 7:30pm. Show your allegiance and let's see who's got the winning vibe!`}</h4>
+        </div>)}
       </div>
       <div className="container" style={{ fontSize: "20px" }}>
         <ul>

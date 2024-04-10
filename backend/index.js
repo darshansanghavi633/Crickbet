@@ -51,9 +51,13 @@ app.post("/login", async (req, res) => {
     res.status(500).send("Server Error logging in");
   }
 });
+
 app.post("/admin", async (req, res) => {
   try {
-    const admin = new Admin(req.body);
+    const admin = new Admin({
+      ...req.body,
+      postTime: new Date()
+    });
     const result = await admin.save();
     res.send(result);
   } catch (error) {
