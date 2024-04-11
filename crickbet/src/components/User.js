@@ -9,6 +9,7 @@ function User(props) {
   const [choice, setChoice] = useState("");
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [matchTime, setMatchTime] = useState(null); // State to store the match time
 
   useEffect(() => {
     const timerID = setInterval(() => {
@@ -25,19 +26,18 @@ function User(props) {
   }, []);
 
   useEffect(() => {
-    const hours = currentTime.getHours();
-    const minutes = currentTime.getMinutes();
+    
 
-    // Check if the current time is between 7:00 PM and 7:30 PM IST (11:30 AM to 12:00 PM UTC)
-    if (hours === 17 && minutes >= 0 && minutes <= 29) {
-      setIsChoiceMade(true); // Allow choice selection from 7:00 PM to 7:30 PM IST
-      const secondsUntilEnd = (30 - minutes) * 60;
+    // Check if the current time is within 30 minutes before the match time
+    if (matchTime && currentTime >= matchTime - 30 * 60 * 1000 && currentTime < matchTime) {
+      setIsChoiceMade(true); // Allow choice selection 30 minutes before the match
+      const secondsUntilEnd = Math.floor((matchTime - currentTime) / 1000);
       setTimeLeft(secondsUntilEnd);
     } else {
       setIsChoiceMade(false); // Disable choice selection outside the specified time range
       setTimeLeft(0);
     }
-  }, [currentTime]);
+  }, [currentTime, matchTime]);
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -82,7 +82,6 @@ function User(props) {
         },
       });
 
-
       if (!result.ok) {
         console.error(`Error: ${result.status} - ${result.statusText}`);
         return;
@@ -91,6 +90,9 @@ function User(props) {
       result = await result.json();
       console.log(result);
       setMatches(result);
+
+      // Set the match time
+      setMatchTime(new Date(result.match));
     } catch (error) {
       console.error("Error fetching matches:", error);
     }
@@ -100,6 +102,7 @@ function User(props) {
   const name = JSON.parse(auth).name;
 
   return (
+
     <div>
       <div className="container text-center" style={{ marginTop: "100px" }}>
         <h3>
